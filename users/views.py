@@ -19,6 +19,13 @@ class LoginView(generics.GenericAPIView):
         token = serializer.validated_data
         return Response({"token":token.key}, status=status.HTTP_200_OK)
 
+class ProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
 class FriendsView(generics.CreateAPIView):
     serializer_class = Friends
     permission_classes = [IsAuthenticated]
