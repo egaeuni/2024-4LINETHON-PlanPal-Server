@@ -50,6 +50,18 @@ class Login(serializers.Serializer):
         else:
             raise serializers. ValidationError("사용자 이름 또는 비밀번호가 맞지 않습니다.")
 
+# 프로필 정보 확인
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('nickname', 'image', 'intro')
+    
+    def update(self, instance, validated_data):
+        instance.nickname = validated_data.get('nickname', instance.nickname)
+        instance.image = validated_data.get('image', instance.image)
+        instance.intro = validated_data.get('intro', instance.intro)
+        instance.save()
+        return instance
 
 # 친구 추가 및 삭제
 class Friends(serializers.Serializer):
@@ -69,5 +81,9 @@ class Friends(serializers.Serializer):
     def create(self, validated_data):
         request_user = self.context['request'].user
         target_user = Profile.objects.get(username=validated_data['username'])
+        
+        if request_user.friends.filter(username=target_user.username).exists():
+            raise serializers.ValidationError("이미 친구입니다.")
+
         request_user.friends.add(target_user)
         return target_user
