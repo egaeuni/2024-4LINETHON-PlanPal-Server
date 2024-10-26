@@ -12,6 +12,7 @@ def upload_filepath(instance, filename):
 class Profile(AbstractUser):
     nickname = models.CharField(max_length=50)
     image = models.ImageField(upload_to='upload_filepath', default='default.png')
+    friends = models.ManyToManyField('self', symmetrical=False, related_name='user_friends') # symmetrical = True -> 자동 맞팔
 
     def __str__(self):
         return f'{self.username}'
