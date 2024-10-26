@@ -34,6 +34,7 @@ class FriendsView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        
         target_user = Profile.objects.get(username=serializer.validated_data['username'])
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
@@ -41,5 +42,6 @@ class FriendsView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         target_user = Profile.objects.get(username=serializer.validated_data['username'])
+        
         request.user.friends.remove(target_user)
         return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다."}, status=status.HTTP_204_NO_CONTENT)

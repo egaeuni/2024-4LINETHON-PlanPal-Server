@@ -81,5 +81,9 @@ class Friends(serializers.Serializer):
     def create(self, validated_data):
         request_user = self.context['request'].user
         target_user = Profile.objects.get(username=validated_data['username'])
+        
+        if request_user.friends.filter(username=target_user.username).exists():
+            raise serializers.ValidationError("이미 친구입니다.")
+
         request_user.friends.add(target_user)
         return target_user
