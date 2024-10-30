@@ -14,6 +14,7 @@ class Category(models.Model):
     title = models.CharField(max_length=30, unique=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default="#FF6A3B")
     is_public = models.BooleanField(default=True)
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -21,7 +22,7 @@ class Category(models.Model):
 class Plan(models.Model):
     author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='plans')
     title = models.CharField(max_length=30)
-    category = models.ManyToManyField(to=Category, through="PlanCategory", related_name="plans")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="plans", blank=True, null=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
     memo = models.TextField(blank=True, null=True)
@@ -33,6 +34,3 @@ class Plan(models.Model):
 class PlanCategory(models.Model):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('plan', 'category')
