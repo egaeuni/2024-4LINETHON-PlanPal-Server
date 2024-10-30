@@ -8,7 +8,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'color', 'is_public']
 
 class PlanSerializer(serializers.ModelSerializer):
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), allow_null=True, required=False)
+    category = serializers.SlugRelatedField(slug_field='title', queryset=Category.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = Plan
@@ -19,13 +19,22 @@ class PlanSerializer(serializers.ModelSerializer):
         author = self.context['request'].user
         participant_data = validated_data.pop('participant', [])
         
+        category_title = validated_data.pop('category', None)
+        if category_title:
+            category, created = Category.objects.get_or_create(title=category_title)
+            validated_data['category'] = category
+
         plan = Plan.objects.create(author=author, **validated_data)
         plan.participant.set(participant_data)
         return plan
 
     def update(self, instance, validated_data):
         participant_data = validated_data.pop('participant', [])
-        category = validated_data.pop('category', None)
+        category_title = validated_data.pop('category', None)
+
+        if category_title is not None:
+            category, created = Category.objects.get_or_create(title=category_title)
+            instance.category = category
 
         instance.title = validated_data.get('title', instance.title)
         instance.start = validated_data.get('start', instance.start)
