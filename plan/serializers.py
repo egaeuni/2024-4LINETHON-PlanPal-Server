@@ -25,11 +25,15 @@ class PlanSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         participant_data = validated_data.pop('participant', [])
+        category = validated_data.pop('category', None)
 
         instance.title = validated_data.get('title', instance.title)
         instance.start = validated_data.get('start', instance.start)
         instance.end = validated_data.get('end', instance.end)
         instance.memo = validated_data.get('memo', instance.memo)
+
+        if category is not None:
+            instance.category = category
 
         instance.participant.set(participant_data)
         instance.save()
