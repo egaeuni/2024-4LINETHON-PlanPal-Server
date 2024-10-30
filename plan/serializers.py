@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Plan, Category
 from users.models import Profile
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,6 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class PlanSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field='title', queryset=Category.objects.all(), allow_null=True, required=False)
+    participant = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all(), many=True, required=False)
 
     class Meta:
         model = Plan
@@ -52,4 +56,5 @@ class PlanSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         if instance.category:
             representation['category'] = CategorySerializer(instance.category).data
+        representation['participant'] = [user.username for user in instance.participant.all()]
         return representation
