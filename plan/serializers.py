@@ -13,10 +13,11 @@ class CategorySerializer(serializers.ModelSerializer):
 class PlanSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field='title', queryset=Category.objects.all(), allow_null=True, required=False)
     participant = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all(), many=True, required=False)
+    is_completed = serializers.BooleanField(required=False)
 
     class Meta:
         model = Plan
-        fields = ['id', 'title', 'category', 'start', 'end', 'participant', 'memo']
+        fields = ['id', 'title', 'category', 'start', 'end', 'participant', 'memo', 'is_completed']
 
     def create(self, validated_data):
         validated_data.pop('author', None)
@@ -47,6 +48,10 @@ class PlanSerializer(serializers.ModelSerializer):
 
         if category is not None:
             instance.category = category
+
+        is_completed = validated_data.pop('is_completed', None)
+        if is_completed is not None:
+            instance.is_completed = is_completed
 
         instance.participant.set(participant_data)
         instance.save()

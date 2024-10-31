@@ -27,6 +27,7 @@ class Plan(models.Model):
     end = models.DateTimeField()
     memo = models.TextField(blank=True, null=True)
     participant = models.ManyToManyField("users.Profile", related_name="participating_plan", blank=True)
+    is_completed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
