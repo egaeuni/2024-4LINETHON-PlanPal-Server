@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'users',
-    'plan'
+    'plan',
+    'promise'
 ]
 
 CORS_ALLOW_ALL_ORIGIN = True
