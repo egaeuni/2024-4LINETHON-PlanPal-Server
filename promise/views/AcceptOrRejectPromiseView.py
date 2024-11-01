@@ -32,6 +32,12 @@ class AcceptOrRejectPromiseView(APIView):
         if not promise.members.filter(id=user.id).exists():
             return Response({"message": "해당 약속의 참여자에 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if promise.accept_members.filter(id=user.id).exists():
+            return Response({"message": "이미 수락했습니다. "}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if promise.reject_members.filter(id=user.id).exists():
+            return Response({"message": "이미 거절했습니다. "}, status=status.HTTP_400_BAD_REQUEST)
+
 
         selected_option = promise.promise_options.first()
 
