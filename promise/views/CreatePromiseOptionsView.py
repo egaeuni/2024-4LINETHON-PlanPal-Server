@@ -121,7 +121,7 @@ def isAvailable(user_profile, start, end):
     # 사용자 일정 조회
     plans = Plan.objects.filter(
         Q(author=user_profile),
-        Q(end__gte=start) & Q(start__lte=end)
+        Q(end__gt=start) & Q(start__lt=end)
     )
 
     # 만약 계획이 없다면 True 반환 (비어있음)
