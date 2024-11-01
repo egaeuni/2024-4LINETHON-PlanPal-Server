@@ -11,7 +11,7 @@ class Category(models.Model):
         ("#A97C50", "Brown"),
     ]
     
-    title = models.CharField(max_length=30, unique=True)
+    title = models.CharField(max_length=30) # unique = True 제거 : 약속 카테고리 때문에 !
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default="#FF6A3B")
     is_public = models.BooleanField(default=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
