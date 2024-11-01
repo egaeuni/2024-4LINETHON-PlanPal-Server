@@ -63,8 +63,10 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'remaining_count': 0
             }
 
+        plan_counts = {}
         for plan in plans:
             date_key = plan.start.date().isoformat()
+            plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
             plan_data= {
                 'id' : plan.id,
                 'title': plan.title,
@@ -72,9 +74,56 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'end': plan.end.isoformat(),
             }
 
+            #if plan_counts[date_key] <= 3:
+                #calendar_data[date_key]['displayed_plans'].append(plan_data)
+            #else:
             if len(calendar_data[date_key]['displayed_plans']) < 2:
                 calendar_data[date_key]['displayed_plans'].append(plan_data)
             else:
                 calendar_data[date_key]['remaining_count'] += 1
         
         return Response(calendar_data)
+
+    @action(detail=False, methods=['get'])
+    def weekly(self, request):
+        date_str = request.query_params.get('date')
+        if date_str:
+            try:
+                current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"error":"YYYY-MM-DD로 입력하세요"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                current_date = timezone.now().date()
+
+            start_of_week = current_date - timedelta(days=current_date.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+
+            plans = self.get_queryset().filter(
+                start__date__gte = start_of_week,
+                start__date__lte = end_of_week
+            ).order_by('start')
+
+            weekly_data = {}
+            for i in range(7):
+                date = start_of_week + timedelta(days=i)
+                date_key = date.isoformat()
+                weekly_data[date_key] = {
+                    'displayed_plans' : [],
+                    'remaining_count': 0
+                }
+            
+            for plan in plans:
+                date_key = plan.start.date().isoformat()
+                plan_data = {
+                    'id' : plan.id,
+                    'title' : plan.title,
+                    'start' : plan.start.isoformat(),
+                    'end' : plan.end.isoformat()
+                }
+
+                if len(weekly_data[date_key]['displayed_plans']) < 2:
+                    weekly_data[date_key]['displayed_plans'].append(plan_data)
+                else:
+                    weekly_data[date_key]['remaining_count'] += 1
+                
+            return Response(weekly_data)
