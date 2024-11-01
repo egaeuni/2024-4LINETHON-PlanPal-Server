@@ -21,11 +21,13 @@ class PromiseOptionSerializer(serializers.ModelSerializer):
 class PromiseSerializer(serializers.ModelSerializer):
     user = ProfileSerializer(read_only=True)
     members = ProfileSerializer(many=True, read_only=True)
+    accept_members = ProfileSerializer(many=True, read_only=True)
+    reject_members = ProfileSerializer(many=True, read_only=True)
     promise_options = PromiseOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Promise
-        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'promise_options']
+        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'accept_members', 'reject_members', 'promise_options']
 
 # 가능한 약속시간 탐색 필드 검증을 위한 시리얼라이저 
 class CreatePromiseOptionsSerializer(serializers.Serializer):
