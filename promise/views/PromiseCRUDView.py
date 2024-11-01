@@ -19,5 +19,5 @@ class PromiseCRUDView(APIView):
 
         serializer = PromiseSerializer(promise)
 
-        return Response({"message": "약속 정보 조회에 성공하였습니다.", "result": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"message": "약속 정보 조회에 성공하였습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
 
