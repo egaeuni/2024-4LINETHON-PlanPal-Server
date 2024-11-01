@@ -24,6 +24,9 @@ class Promise(models.Model):
     
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     members = models.ManyToManyField(Profile, related_name="promises")
+    accept_members = models.ManyToManyField(Profile, related_name="promises_accept")
+    reject_members = models.ManyToManyField(Profile, related_name="promises_reject")
+    
     # favorites =  즐겨찾기
 
     title = models.CharField(max_length=30)
