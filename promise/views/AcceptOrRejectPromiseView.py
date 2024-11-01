@@ -58,8 +58,9 @@ class AcceptOrRejectPromiseView(APIView):
 
             plan.participant.set(promise.accept_members.all()) # 수락한 사람 모두 침여자로 추가
 
-
+            isAllReply(promise)
             serializer = PromiseSerializer(promise)
+            
             return Response({"message": "약속이 수락되었습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
         
         elif accept_or_reject == 'reject':
@@ -67,8 +68,20 @@ class AcceptOrRejectPromiseView(APIView):
             if selected_option.members_can_attend.filter(id=user.id).exists():
                 selected_option.members_can_attend.remove(user)
 
+            isAllReply(promise)
             serializer = PromiseSerializer(promise)
 
             return Response({"message": "약속이 거절되었습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
         
         return Response({"message": "accept 혹은 reject가 아닌 다른 String이 입력되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+def isAllReply(promise):
+    # 모든 멤버가 수락/거절한 경우
+    if promise.accept_members.count() + promise.reject_members.count() == promise.members.count():
+        promise.status = "completed"
+        promise.save()
+        return True
+    
+    return False
