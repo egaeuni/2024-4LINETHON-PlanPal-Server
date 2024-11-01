@@ -56,7 +56,7 @@ class AcceptOrRejectPromiseView(APIView):
                 is_completed=False
             )
 
-            plan.participant.set(selected_option.members_can_attend.all())
+            plan.participant.set(promise.accept_members.all()) # 수락한 사람 모두 침여자로 추가
 
 
             serializer = PromiseSerializer(promise)
