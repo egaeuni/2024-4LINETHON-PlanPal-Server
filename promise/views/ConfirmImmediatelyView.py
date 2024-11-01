@@ -2,15 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from datetime import timedelta
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-
 from promise.models import PromiseOption, Promise
-from plan.models import Plan
-from users.models import Profile
 
-from promise.serializers import CreatePromiseOptionsSerializer, PromiseOptionSerializer, PromiseSerializer
+from promise.serializers import PromiseSerializer
 
 
 # 내 마음대로 확정하기, 즉시 확정하기
