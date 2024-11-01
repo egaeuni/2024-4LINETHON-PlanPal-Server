@@ -92,7 +92,7 @@ def findAvailable(user_profile, start_date, end_date, length):
                 "members" : [user_profile]
             }
             promise_options.append(option)
-            available_start += timedelta(hours=1)  # 1시간씩 이동하여 다음 가능한 시간을 찾음
+            available_start += timedelta(minutes=30)  # 30분씩 이동하여 다음 가능한 시간을 찾음
 
         available_start = max(available_start, plan.end)  # 다음 가능한 시작시간 업데이트
 
@@ -104,7 +104,7 @@ def findAvailable(user_profile, start_date, end_date, length):
             "members" : [user_profile]
         }
         promise_options.append(option)
-        available_start += timedelta(hours=1)
+        available_start += timedelta(minutes=30)
 
     return promise_options
 
