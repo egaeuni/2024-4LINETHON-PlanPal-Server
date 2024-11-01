@@ -4,6 +4,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 
+from plan.models import Category
+
 # 회원가입
 class Register(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -34,6 +36,15 @@ class Register(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        
+        # 약속 카테고리 생성
+        Category.objects.create(
+            author=user,
+            title="약속",
+            color="#FF6A3B",
+            is_public=True
+        )
+
         token = Token.objects.create(user=user)
         return user
 
