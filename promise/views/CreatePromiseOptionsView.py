@@ -10,7 +10,7 @@ from promise.models import PromiseOption, Promise
 from plan.models import Plan
 from users.models import Profile
 
-from promise.serializers import CreatePromiseOptionsSerializer, PromiseOptionSerializer, PromiseSerializer
+from promise.serializers import CreatePromiseOptionsSerializer, PromiseSerializer
 
 
 # 가능한 약속시간 탐색
@@ -27,6 +27,13 @@ class CreatePromiseOptionsView(APIView):
         start_date = validated_data['start']
         end_date = validated_data['end']
         length = validated_data['length']
+
+        if (start_date == end_date):
+            return Response({"message": "시작 시간과 끝나는 시간이 같습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if (end_date - start_date < timedelta(hours=length)):
+            return Response({"message": "시작 시간과 끝나는 시간의 기간이 약속 길이보다 짧습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
 
         promise_options_except_only_me = []
 
