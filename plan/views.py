@@ -117,6 +117,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             start_hour = plan.start.hour
             end_hour = plan.end.hour
             plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
+
             plan_data= {
                 'id' : plan.id,
                 'title': plan.title,
@@ -139,7 +140,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                return Response({"error":"YYYY-MM-DD로 입력하세요"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error":"YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 current_date = timezone.now().date()
 
@@ -188,17 +189,14 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             current_date = timezone.now().date()
 
         time_slots = {hour: [] for hour in range(24)}   # 0시 ~ 23시
         categories = {}
 
-        start_of_day = datetime.combine(current_date, time.min)
-        end_of_day = datetime.combine(current_date, time.max)
-
-        plans = self.get_queryset().filter(author=user, start__gte =start_of_day, start__lte= end_of_day).order_by('start')
+        plans = self.get_queryset().filter(author=user, start__date=current_date).order_by('start')
 
         for plan in plans:
             start_hour = plan.start.hour
