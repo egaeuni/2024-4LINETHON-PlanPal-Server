@@ -17,7 +17,7 @@ class PlanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Plan
-        fields = ['id', 'title', 'category', 'start', 'end', 'participant', 'memo', 'is_completed', 'author']
+        fields = ['id', 'title', 'category', 'start', 'end', 'participant', 'memo', 'is_completed']
         read_only_fields = ['author']
 
     def create(self, validated_data):
@@ -29,7 +29,9 @@ class PlanSerializer(serializers.ModelSerializer):
             category, created = Category.objects.get_or_create(title=category_title, author=author)
             validated_data['category'] = category
 
-        plan = Plan.objects.create(author=author, **validated_data)
+        validated_data['author'] = author
+
+        plan = Plan.objects.create(**validated_data)
         plan.participant.set(participant_data)
         return plan
 
