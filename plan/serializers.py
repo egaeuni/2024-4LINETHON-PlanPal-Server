@@ -18,18 +18,20 @@ class PlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
         fields = ['id', 'title', 'category', 'start', 'end', 'participant', 'memo', 'is_completed']
+        read_only_fields = ['author']
 
     def create(self, validated_data):
-        validated_data.pop('author', None)
         author = self.context['request'].user
         participant_data = validated_data.pop('participant', [])
-        
+    
         category_title = validated_data.pop('category', None)
         if category_title:
-            category, created = Category.objects.get_or_create(title=category_title)
+            category, created = Category.objects.get_or_create(title=category_title, author=author)
             validated_data['category'] = category
 
-        plan = Plan.objects.create(author=author, **validated_data)
+        validated_data['author'] = author
+
+        plan = Plan.objects.create(**validated_data)
         plan.participant.set(participant_data)
         return plan
 
@@ -38,7 +40,7 @@ class PlanSerializer(serializers.ModelSerializer):
         category_title = validated_data.pop('category', None)
 
         if category_title is not None:
-            category, created = Category.objects.get_or_create(title=category_title)
+            category, created = Category.objects.get_or_create(title=category_title, author=instance.author)
             instance.category = category
 
         instance.title = validated_data.get('title', instance.title)

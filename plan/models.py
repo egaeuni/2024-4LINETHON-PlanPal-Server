@@ -1,7 +1,9 @@
 from django.db import models
 from users.models import  Profile
+from django.contrib.auth import get_user_model
 
-# Create your models here.
+User = get_user_model()
+
 class Category(models.Model):
     COLOR_CHOICES = [
         ("#FF6A3B", "Orange"),
@@ -20,7 +22,7 @@ class Category(models.Model):
         return self.title
 
 class Plan(models.Model):
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='plans')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='plans')
     title = models.CharField(max_length=30)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="plans", blank=True, null=True)
     start = models.DateTimeField()
