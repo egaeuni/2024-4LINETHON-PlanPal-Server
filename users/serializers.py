@@ -45,21 +45,12 @@ class Register(serializers.ModelSerializer):
             is_public=True
         )
 
-        token = Token.objects.create(user=user)
         return user
 
 # 로그인
 class Login(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
-
-    def validate(self, data):
-        user = authenticate(**data)
-        if user:
-            token = Token.objects.get(user=user)
-            return token
-        else:
-            raise serializers. ValidationError("사용자 이름 또는 비밀번호가 맞지 않습니다.")
 
 # 프로필 정보 확인
 class ProfileSerializer(serializers.ModelSerializer):
@@ -77,24 +68,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 # 친구 추가 및 삭제
 class Friends(serializers.Serializer):
     username = serializers.CharField()
-
-    def validate_username(self, username):
-        try:
-            target_user = Profile.objects.get(username=username)
-        except Profile.DoesNotExist:
-            raise serializers.ValidationError("해당 유저가 존재하지 않습니다.")
-
-        if self.context['request'].user.username == username:
-            raise serializers.ValidationError("자기 자신을 친구 추가할 수 없습니다")
     
-        return username
-
     def create(self, validated_data):
         request_user = self.context['request'].user
-        target_user = Profile.objects.get(username=validated_data['username'])
-        
-        if request_user.friends.filter(username=target_user.username).exists():
-            raise serializers.ValidationError("이미 친구입니다.")
+        target_user = get_object_or_404(Profile, user__username=validated_data['username'])
 
         request_user.friends.add(target_user)
         return target_user

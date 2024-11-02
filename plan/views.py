@@ -6,7 +6,7 @@ from .models import Plan, Category
 from .serializers import PlanSerializer, CategorySerializer
 from .permissions import CustomReadOnly
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from django.utils import timezone
 from calendar import monthrange
 from django.shortcuts import get_object_or_404
@@ -114,6 +114,8 @@ class PlanViewSet(viewsets.ModelViewSet):
         plan_counts = {}
         for plan in plans:
             date_key = plan.start.date().isoformat()
+            start_hour = plan.start.hour
+            end_hour = plan.end.hour
             plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
             plan_data= {
                 'id' : plan.id,
@@ -147,7 +149,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             plans = self.get_queryset().filter(
                 author=user,
                 start__date__gte = start_of_week,
-                start__date__lte = end_of_week
+                start__date__lte = end_of_week + timedelta(days=1)
             ).order_by('start')
 
             weekly_data = {}
@@ -161,6 +163,9 @@ class PlanViewSet(viewsets.ModelViewSet):
             
             for plan in plans:
                 date_key = plan.start.date().isoformat()
+                start_hour = plan.start.hour
+                end_hour = plan.end.hour if plan.end else date_key
+
                 plan_data = {
                     'id' : plan.id,
                     'title' : plan.title,
@@ -190,10 +195,14 @@ class PlanViewSet(viewsets.ModelViewSet):
         time_slots = {hour: [] for hour in range(24)}   # 0시 ~ 23시
         categories = {}
 
-        plans = self.get_queryset().filter(author=user, start__date=current_date).order_by('start')
+        start_of_day = datetime.combine(current_date, time.min)
+        end_of_day = datetime.combine(current_date, time.max)
+
+        plans = self.get_queryset().filter(author=user, start__gte =start_of_day, start__lte= end_of_day).order_by('start')
 
         for plan in plans:
             start_hour = plan.start.hour
+            end_hour = plan.end.hour if plan.end else start_hour
             plan_data = {
                 'id': plan.id,
                 'title': plan.title,
@@ -201,7 +210,9 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'start': plan.start.isoformat(),
                 'end': plan.end.isoformat() if plan.end else None,
             }
-            time_slots[start_hour].append(plan_data)
+
+            for hour in range(start_hour, end_hour + 1):
+                time_slots[hour].append(plan_data)
 
             category_title = plan.category.title if plan.category else "Uncategorized"
             if category_title not in categories:
