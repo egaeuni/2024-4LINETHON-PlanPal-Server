@@ -4,7 +4,9 @@ from rest_framework import generics, status
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 class RegisterView(generics.CreateAPIView):
     queryset = Profile.objects.all()
@@ -14,34 +16,65 @@ class LoginView(generics.GenericAPIView):
     serializer_class = Login
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data
-        return Response({"token":token.key}, status=status.HTTP_200_OK)
+        username=request.data.get("username")
+        password=request.data.get("password")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            Login(request, user)
+            return Response({"message":"로그인 성공"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message":"유효하지 않은 사용자 정보입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
+    queryset = Profile.objects.all()
+    lookup_field = 'username'
 
     def get_object(self):
-        return self.request.user
+        username = self.kwargs.get('username')
+        return get_object_or_404(Profile, username=username)
 
 class FriendsView(generics.CreateAPIView):
     serializer_class = Friends
-    permission_classes = [IsAuthenticated]
+    queryset = Profile.objects.all()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
         
-        target_user = Profile.objects.get(username=serializer.validated_data['username'])
+        user_username = kwargs.get('username')
+        #if user_username is None:
+            #return Response({'error': "URL에 username이 제공되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = Profile.objects.get(username=user_username)
+        except ObjectDoesNotExist:
+            return Response({'error': f"'{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        target_username = serializer.validated_data['username']
+        try:
+            target_user = Profile.objects.get(username=target_username)
+        except ObjectDoesNotExist:
+            return Response({'error': f"'{target_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        user.friends.add(target_user)
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
     def delete(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        target_user = Profile.objects.get(username=serializer.validated_data['username'])
         
-        request.user.friends.remove(target_user)
+        user_username = kwargs.get('username')
+        try:
+            user = Profile.objects.get(username=user_username)
+        except ObjectDoesNotExist:
+            return Response({'error': f"프로필 '{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        target_username = serializer.validated_data['username']
+        try:
+            target_user = Profile.objects.get(username=target_username)
+        except ObjectDoesNotExist:
+            return Response({'error': f"프로필 '{target_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        user.friends.remove(target_user)
         return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다."}, status=status.HTTP_204_NO_CONTENT)
