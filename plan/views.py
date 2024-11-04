@@ -235,7 +235,6 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-
                 return Response({"error": "YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             current_date = timezone.now().date()
@@ -246,16 +245,17 @@ class PlanViewSet(viewsets.ModelViewSet):
         plans = self.get_queryset().filter(author=user, start__date=current_date).order_by('start')
 
         for plan in plans:
-            start_hour = plan.start
-            end_hour = plan.end if plan.end else start_hour
+            start_hour = plan.start.astimezone(timezone.get_current_timezone())  # 로컬 시간대로 변환
+            end_hour = plan.end.astimezone(timezone.get_current_timezone()) if plan.end else start_hour
             plan_data = {
                 'id': plan.id,
                 'title': plan.title,
                 'category': plan.category.title if plan.category else None,
-                'start': plan.start.isoformat(),
-                'end': plan.end.isoformat() if plan.end else None,
+                'start': start_hour.isoformat(),
+                'end': end_hour.isoformat() if end_hour else None,
             }
 
+            # current_slot을 start_hour로 설정
             current_slot = start_hour.replace(minute=start_hour.minute // 10 * 10, second=0, microsecond=0)
             while current_slot <= end_hour:
                 slot_key = current_slot.strftime("%H:%M")
@@ -272,3 +272,4 @@ class PlanViewSet(viewsets.ModelViewSet):
             "time_slots": time_slots,
             "categories": categories
         })
+
