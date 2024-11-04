@@ -189,6 +189,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
+
                 return Response({"error": "YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             current_date = timezone.now().date()

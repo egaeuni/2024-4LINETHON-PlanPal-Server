@@ -48,7 +48,7 @@ class FriendsView(generics.CreateAPIView):
             user = Profile.objects.get(username=user_username)
         except ObjectDoesNotExist:
             return Response({'error': f"'{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        
+       
         target_username = serializer.validated_data['username']
         try:
             target_user = Profile.objects.get(username=target_username)
