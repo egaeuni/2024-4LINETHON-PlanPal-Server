@@ -182,48 +182,56 @@ class PlanViewSet(viewsets.ModelViewSet):
         date_str = request.query_params.get('date')
         if date_str:
             try:
-                current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                current_date = datetime.strptime(date_str, '%Y-%m-%d').replace(hour=0, minute=0)
             except ValueError:
                 return Response({"error":"YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                current_date = timezone.now().date()
+        else:
+            current_date = timezone.now().date()
 
-            start_of_week = current_date - timedelta(days=current_date.weekday())
-            end_of_week = start_of_week + timedelta(days=6)
+        # 현재 날짜를 한국 시간으로 변환
+        current_date = current_date.astimezone(timezone.get_current_timezone())
 
-            plans = self.get_queryset().filter(
-                author=user,
-                start__date__gte = start_of_week,
-                start__date__lte = end_of_week + timedelta(days=1)
-            ).order_by('start')
+        # 월요일로 주 시작일 계산 (current_date.weekday()는 월요일이 0)
+        start_of_week = current_date - timedelta(days=current_date.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
 
-            weekly_data = {}
-            for i in range(7):
-                date = start_of_week + timedelta(days=i)
-                date_key = date.isoformat()
-                weekly_data[date_key] = {
-                    'displayed_plans' : [],
-                    'remaining_count': 0
-                }
+        plans = self.get_queryset().filter(
+            author=user,
+            start__date__gte=start_of_week,
+            start__date__lte=end_of_week + timedelta(days=1)
+        ).order_by('start')
+
+        weekly_data = {}
+        for i in range(7):
+            date = start_of_week + timedelta(days=i)
+            date_key = date.date().isoformat()
+            weekly_data[date_key] = {
+                'displayed_plans': [],
+                'remaining_count': 0
+            }
+        
+        for plan in plans:
+            # UTC -> KST
+            start_hour = plan.start.astimezone(timezone.get_current_timezone())
+            end_hour = plan.end.astimezone(timezone.get_current_timezone()) if plan.end else start_hour
             
-            for plan in plans:
-                date_key = plan.start.date().isoformat()
-                start_hour = plan.start.hour
-                end_hour = plan.end.hour if plan.end else date_key
+            date_key = start_hour.date().isoformat()
 
-                plan_data = {
-                    'id' : plan.id,
-                    'title' : plan.title,
-                    'start' : plan.start.isoformat(),
-                    'end' : plan.end.isoformat()
-                }
+            plan_data = {
+                'id': plan.id,
+                'title': plan.title,
+                'start': start_hour.isoformat(),
+                'end': end_hour.isoformat(),
+                'weekday': start_hour.weekday()
+            }
 
-                if len(weekly_data[date_key]['displayed_plans']) < 2:
-                    weekly_data[date_key]['displayed_plans'].append(plan_data)
-                else:
-                    weekly_data[date_key]['remaining_count'] += 1
+            if len(weekly_data[date_key]['displayed_plans']) < 2:
+                weekly_data[date_key]['displayed_plans'].append(plan_data)
+            else:
+                weekly_data[date_key]['remaining_count'] += 1
                 
-            return Response(weekly_data)
+        return Response(weekly_data)
+
 
     @action(detail=False, methods=['get'])
     def daily(self, request, username=None):
