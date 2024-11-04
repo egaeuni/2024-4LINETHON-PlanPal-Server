@@ -6,7 +6,7 @@ from django.db.models import Q
 from promise.models import Promise, Memo
 from users.models import Profile
 
-from promise.serializers import PromiseSerializer, MemoSerializer
+from promise.serializers import PromiseSerializer
 
 
 # Promise에 대한 기본적인 CRUD API
@@ -65,7 +65,7 @@ class PromiseCRUDView(APIView):
                 memo.content = new_memo_content
                 memo.save()
             else:
-                memo.delete()
+                memo.delete
         # 메모가 없는 경우 메모를 생성
         except Memo.DoesNotExist:
             Memo.objects.create(
@@ -100,6 +100,8 @@ class GETPromiseByUsername(APIView):
             return Response({"message": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         promises = Promise.objects.filter(Q(user=user) | Q(accept_members=user)).distinct()
-        serializer = PromiseSerializer(promises, many=True)
+        
+        serializer = PromiseSerializer(promises, many=True, context={'username': username})
+
 
         return Response({"message": "약속 정보 조회에 성공하였습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
