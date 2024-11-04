@@ -19,9 +19,11 @@ class PromiseOptionSerializer(serializers.ModelSerializer):
 
 # Memo 시리얼라이저
 class MemoSerializer(serializers.ModelSerializer):
+    user = ProfileSerializer(read_only=True)
+
     class Meta:
         model = Memo
-        fields = '__all__' 
+        fields = ['id', 'user', 'content', 'promise'] 
 
 # 약속 시리얼라이저
 class PromiseSerializer(serializers.ModelSerializer):
