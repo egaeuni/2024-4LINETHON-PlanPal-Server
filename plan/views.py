@@ -162,12 +162,8 @@ class PlanViewSet(viewsets.ModelViewSet):
             date_key = plan.start.astimezone(timezone.get_current_timezone()).date().isoformat()  # KST로 변환
             plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
 
-            plan_data= {
-                'id' : plan.id,
-                'title': plan.title,
-                'start': plan.start.astimezone(timezone.get_current_timezone()).isoformat(),  # KST로 변환
-                'end': plan.end.astimezone(timezone.get_current_timezone()).isoformat(),  # KST로 변환
-            }
+            # 시리얼라이저로 반환
+            plan_data = PlanSerializer(plan).data 
 
             if len(calendar_data[date_key]['displayed_plans']) < 2:
                 calendar_data[date_key]['displayed_plans'].append(plan_data)
@@ -217,13 +213,8 @@ class PlanViewSet(viewsets.ModelViewSet):
             
             date_key = start_hour.date().isoformat()
 
-            plan_data = {
-                'id': plan.id,
-                'title': plan.title,
-                'start': start_hour.isoformat(),
-                'end': end_hour.isoformat(),
-                'weekday': start_hour.weekday()
-            }
+            # 시리얼라이저로 반환
+            plan_data = PlanSerializer(plan).data 
 
             if len(weekly_data[date_key]['displayed_plans']) < 2:
                 weekly_data[date_key]['displayed_plans'].append(plan_data)
@@ -253,13 +244,9 @@ class PlanViewSet(viewsets.ModelViewSet):
         for plan in plans:
             start_hour = plan.start.astimezone(timezone.get_current_timezone())  # 로컬 시간대로 변환
             end_hour = plan.end.astimezone(timezone.get_current_timezone()) if plan.end else start_hour
-            plan_data = {
-                'id': plan.id,
-                'title': plan.title,
-                'category': plan.category.title if plan.category else None,
-                'start': start_hour.isoformat(),
-                'end': end_hour.isoformat() if end_hour else None,
-            }
+
+            # 시리얼라이저로 반환
+            plan_data = PlanSerializer(plan).data 
 
             # current_slot을 start_hour로 설정
             current_slot = start_hour.replace(minute=start_hour.minute // 10 * 10, second=0, microsecond=0)
