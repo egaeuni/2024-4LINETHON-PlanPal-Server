@@ -6,7 +6,7 @@ from .models import Plan, Category
 from .serializers import PlanSerializer, CategorySerializer
 from .permissions import CustomReadOnly
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from django.utils import timezone
 from calendar import monthrange
 from django.shortcuts import get_object_or_404
@@ -114,7 +114,10 @@ class PlanViewSet(viewsets.ModelViewSet):
         plan_counts = {}
         for plan in plans:
             date_key = plan.start.date().isoformat()
+            start_hour = plan.start.hour
+            end_hour = plan.end.hour
             plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
+
             plan_data= {
                 'id' : plan.id,
                 'title': plan.title,
@@ -137,7 +140,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                return Response({"error":"YYYY-MM-DD로 입력하세요"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error":"YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 current_date = timezone.now().date()
 
@@ -147,7 +150,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             plans = self.get_queryset().filter(
                 author=user,
                 start__date__gte = start_of_week,
-                start__date__lte = end_of_week
+                start__date__lte = end_of_week + timedelta(days=1)
             ).order_by('start')
 
             weekly_data = {}
@@ -161,6 +164,9 @@ class PlanViewSet(viewsets.ModelViewSet):
             
             for plan in plans:
                 date_key = plan.start.date().isoformat()
+                start_hour = plan.start.hour
+                end_hour = plan.end.hour if plan.end else date_key
+
                 plan_data = {
                     'id' : plan.id,
                     'title' : plan.title,
@@ -183,17 +189,19 @@ class PlanViewSet(viewsets.ModelViewSet):
             try:
                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+                return Response({"error": "YYYY-MM-DD로 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             current_date = timezone.now().date()
 
-        time_slots = {hour: [] for hour in range(24)}   # 0시 ~ 23시
+        time_slots = {f"{hour:02d}:{minute:02d}" : [] for hour in range(24) for minute in range(0,60,10)}   # 0시 ~ 23시
         categories = {}
 
         plans = self.get_queryset().filter(author=user, start__date=current_date).order_by('start')
 
         for plan in plans:
-            start_hour = plan.start.hour
+            start_hour = plan.start
+            end_hour = plan.end if plan.end else start_hour
             plan_data = {
                 'id': plan.id,
                 'title': plan.title,
@@ -201,7 +209,13 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'start': plan.start.isoformat(),
                 'end': plan.end.isoformat() if plan.end else None,
             }
-            time_slots[start_hour].append(plan_data)
+
+            current_slot = start_hour.replace(minute=start_hour.minute // 10 * 10, second=0, microsecond=0)
+            while current_slot <= end_hour:
+                slot_key = current_slot.strftime("%H:%M")
+                if slot_key in time_slots:
+                    time_slots[slot_key].append(plan_data)
+                current_slot += timedelta(minutes=10)
 
             category_title = plan.category.title if plan.category else "Uncategorized"
             if category_title not in categories:
