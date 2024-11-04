@@ -6,7 +6,7 @@ from django.db.models import Q
 from promise.models import Promise, Memo
 from users.models import Profile
 
-from promise.serializers import PromiseSerializer, MemoSerializer
+from promise.serializers import PromiseSerializer
 
 
 # Promise에 대한 기본적인 CRUD API

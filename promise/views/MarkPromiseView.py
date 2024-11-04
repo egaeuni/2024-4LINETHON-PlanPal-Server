@@ -45,6 +45,10 @@ class MarkPromiseView(APIView):
             promise = Promise.objects.get(id=promise_id)
         except Promise.DoesNotExist:
             return Response({"message": "해당 약속을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 이미 즐겨찾기가 해제 되어있는지 
+        if not Mark.objects.filter(user=user, promise=promise).exists():
+            return Response({"message": "즐겨찾기 되어있지 않은 약속입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Mark 인스턴스 생성
         mark = Mark.objects.get(user=user, promise=promise)
