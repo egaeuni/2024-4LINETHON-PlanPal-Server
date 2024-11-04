@@ -194,15 +194,14 @@ class PlanViewSet(viewsets.ModelViewSet):
         else:
             current_date = timezone.now().date()
 
-        time_slots = {hour: [] for hour in range(24)}   # 0시 ~ 23시
+        time_slots = {f"{hour:02d}:{minute:02d}" : [] for hour in range(24) for minute in range(0,60,10)}   # 0시 ~ 23시
         categories = {}
 
         plans = self.get_queryset().filter(author=user, start__date=current_date).order_by('start')
 
         for plan in plans:
-            start_hour = plan.start.hour
-            end_hour = plan.end.hour if plan.end else start_hour
-            
+            start_hour = plan.start
+            end_hour = plan.end if plan.end else start_hour
             plan_data = {
                 'id': plan.id,
                 'title': plan.title,
@@ -211,8 +210,12 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'end': plan.end.isoformat() if plan.end else None,
             }
 
-            for hour in range(start_hour, end_hour + 1):
-                time_slots[hour].append(plan_data)
+            current_slot = start_hour.replace(minute=start_hour.minute // 10 * 10, second=0, microsecond=0)
+            while current_slot <= end_hour:
+                slot_key = current_slot.strftime("%H:%M")
+                if slot_key in time_slots:
+                    time_slots[slot_key].append(plan_data)
+                current_slot += timedelta(minutes=10)
 
             category_title = plan.category.title if plan.category else "Uncategorized"
             if category_title not in categories:
