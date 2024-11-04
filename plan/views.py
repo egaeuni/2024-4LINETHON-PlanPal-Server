@@ -19,17 +19,24 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         username = self.kwargs.get('username')
-        if username:
-            return Category.objects.filter(author__username=username)
-        return Category.objects.all()
+        return Category.objects.filter(author__username=username) if username else Category.objects.all()
+
+    def list(self, request, username=None):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(
+            {"message": "카테고리 조회에 성공하였습니다.", "result": serializer.data},
+            status=status.HTTP_200_OK
+        )
+
 
     def create(self, request, username=None):
         user = get_object_or_404(Profile, username=username)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "카테고리 생성에 성공하였습니다.", "result": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"message": "카테고리 생성에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
 
     def update(self, request, username=None, pk=None):
         user = get_object_or_404(User, username=username)
@@ -37,14 +44,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"message": "카테고리 수정에 성공했습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"message": "카테고리 수정에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
     def destroy(self, request, username=None, pk=None):
         user = get_object_or_404(User, username=username)
         category = get_object_or_404(Category, pk=pk, author=user)
         category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "카테고리 삭제에 성공했습니다."}, status=status.HTTP_200_OK)
         
 class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.all()
@@ -55,7 +63,24 @@ class PlanViewSet(viewsets.ModelViewSet):
         if username:
             user = get_object_or_404(User, username=username)
             return Plan.objects.filter(author=user)
-        return super().get_queryset()
+        return Plan.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {"message": "일정 조회에 성공하였습니다.", "result": serializer.data},
+            status=status.HTTP_200_OK
+        )
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            {"message": "일정 조회에 성공하였습니다.", "result": serializer.data},
+            status=status.HTTP_200_OK
+        )
+
 
     def create(self, request, username=None):
         # username으로 사용자 객체 찾기
@@ -88,9 +113,9 @@ class PlanViewSet(viewsets.ModelViewSet):
             plan.participant.set(participants)  # manyToMany 필드는 이렇게 set으로 처리 해줘야 합니다 !
             
             response_serializer = PlanSerializer(plan)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "일정 생성에 성공했습니다.", "result": response_serializer.data}, status=status.HTTP_201_CREATED)
+                
+        return Response({"message": "일정 생성에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
     def update(self, request, username=None, pk=None):
@@ -121,16 +146,16 @@ class PlanViewSet(viewsets.ModelViewSet):
             updated_plan.participant.set(participants)  # manyToMany 필드는 이렇게 set으로 처리 해줘야 합니다 !
 
             response_serializer = PlanSerializer(updated_plan)
-            return Response(response_serializer.data)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "일정 수정에 성공했습니다.", "result": response_serializer.data}, status=status.HTTP_200_OK)
+                
+        return Response({"message": "일정 수정에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
     def destroy(self, request, username=None, pk=None):
         user = get_object_or_404(User, username=username)
         plan = get_object_or_404(Plan, pk=pk, author=user)
         plan.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "일정 삭제에 성공했습니다."}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def monthly(self, request, username=None):
@@ -170,7 +195,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             else:
                 calendar_data[date_key]['remaining_count'] += 1
         
-        return Response(calendar_data)
+        return Response({"message": "월간 캘린더 조회에 성공했습니다.", "result": calendar_data}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def weekly(self, request, username=None):
@@ -221,7 +246,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             else:
                 weekly_data[date_key]['remaining_count'] += 1
                 
-        return Response(weekly_data)
+        return Response({"message": "주간 캘린더 조회에 성공했습니다.", "result": weekly_data}, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=['get'])
@@ -262,7 +287,10 @@ class PlanViewSet(viewsets.ModelViewSet):
             categories[category_title].append(plan_data)
 
         return Response({
-            "time_slots": time_slots,
+            "message": "주간 캘린더 조회에 성공했습니다.",
+            "result": {
+                "time_slots": time_slots,
             "categories": categories
-        })
+            }},
+            status=status.HTTP_200_OK)
 
