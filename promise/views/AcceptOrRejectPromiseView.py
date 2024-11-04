@@ -21,7 +21,7 @@ class AcceptOrRejectPromiseView(APIView):
             return Response({"message": "해당 약속을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            category = Category.objects.get(title="약속")
+            category = Category.objects.get(author=user, title="약속")
         except Category.DoesNotExist:
             return Response({"message": "약속 카테고리를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         

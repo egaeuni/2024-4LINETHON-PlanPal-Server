@@ -71,7 +71,7 @@ class CreatePromiseOptionsView(APIView):
             status="created",
         )
 
-        promise.members.set(Profile.objects.filter(username__in=members_usernames + [username]))
+        promise.members.set(Profile.objects.filter(username__in=members_usernames))
         promise.promise_options.set(promise_options_except_only_me)
         
         serializer = PromiseSerializer(promise)

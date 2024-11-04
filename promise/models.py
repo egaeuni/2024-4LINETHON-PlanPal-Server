@@ -37,3 +37,8 @@ class Promise(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="created")
 
     promise_options = models.ManyToManyField(PromiseOption, related_name='promises', blank=True)
+
+class Memo(models.Model):
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    content = models.TextField(max_length=30)
+    promise = models.ForeignKey(Promise, on_delete=models.CASCADE, related_name='memos')

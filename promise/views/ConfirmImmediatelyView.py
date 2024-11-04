@@ -24,7 +24,7 @@ class ConfirmImmediatelyView(APIView):
             return Response({"message": "해당 약속 후보를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
                 
         try:
-            category = Category.objects.get(title="약속")
+            category = Category.objects.get(author=promise.user, title="약속")
         except Category.DoesNotExist:
             return Response({"message": "약속 카테고리를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -37,7 +37,6 @@ class ConfirmImmediatelyView(APIView):
         promise.save()
 
         selected_option = promise.promise_options.first()
-        promise.accept_members.add(promise.user)  # 주최자는 바로 accept에 추가
 
         # Plan 생성
         plan = Plan.objects.create(

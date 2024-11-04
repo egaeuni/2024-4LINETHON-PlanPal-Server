@@ -10,5 +10,4 @@ urlpatterns = [
     path('promise/<int:promise_id>/', PromiseCRUDView.as_view(), name='promise-crud'),
     path('promise/<str:username>/', GETPromiseByUsername.as_view(), name='promise-list-by-username'),
     path('promise/accept/<int:promise_id>/<str:username>/<str:accept_or_reject>', AcceptOrRejectPromiseView.as_view(), name='promise-accept-or-reject'),
-    
 ]
