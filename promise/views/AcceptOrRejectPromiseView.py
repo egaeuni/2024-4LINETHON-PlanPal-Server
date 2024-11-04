@@ -53,7 +53,8 @@ class AcceptOrRejectPromiseView(APIView):
                 start=selected_option.start,
                 end=selected_option.end,
                 memo="",
-                is_completed=False
+                is_completed=False,
+                promise=promise
             )
 
             plan.participant.set(promise.accept_members.all()) # 수락한 사람 모두 침여자로 추가

@@ -2,6 +2,8 @@ from django.db import models
 from users.models import  Profile
 from django.contrib.auth import get_user_model
 
+from promise.models import Promise
+
 User = get_user_model()
 
 class Category(models.Model):
@@ -30,6 +32,9 @@ class Plan(models.Model):
     memo = models.TextField(blank=True, null=True)
     participant = models.ManyToManyField("users.Profile", related_name="participating_plan", blank=True)
     is_completed = models.BooleanField(default=False)
+
+    # 약속으로 생성된 Plan인 경우 promise를 참조하도록
+    promise = models.ForeignKey(Promise, on_delete=models.CASCADE, related_name='promise_creates_this_plan', null=True)
 
     def __str__(self):
         return self.title
