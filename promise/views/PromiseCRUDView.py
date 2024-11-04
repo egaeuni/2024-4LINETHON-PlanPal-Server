@@ -58,11 +58,15 @@ class PromiseCRUDView(APIView):
             promise.title = new_title
 
         # 메모 변경
+        # 이미 메모가 있는 경우
         try:
             memo = Memo.objects.get(promise=promise, user=me)
             if new_memo_content:
                 memo.content = new_memo_content
                 memo.save()
+            else:
+                memo.delete()
+        # 메모가 없는 경우 메모를 생성
         except Memo.DoesNotExist:
             Memo.objects.create(
                 user=me,
@@ -74,6 +78,9 @@ class PromiseCRUDView(APIView):
         if new_members_usernames:
             new_members = Profile.objects.filter(username__in=new_members_usernames)
             promise.accept_members.set(new_members)
+        else:
+            # 전체를 지운 경우
+            promise.accept_members.clear()
 
         promise.save() 
 
