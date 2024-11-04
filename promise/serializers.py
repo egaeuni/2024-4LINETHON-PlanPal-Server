@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Promise, PromiseOption
+from .models import Promise, PromiseOption, Memo
 from users.models import Profile
 
 # 'id', 'username', 'nickname' 반환을 위한 시리얼라이저
@@ -17,6 +17,12 @@ class PromiseOptionSerializer(serializers.ModelSerializer):
         model = PromiseOption
         fields = ['id', 'title', 'start', 'end', 'length', 'members_can_attend', 'vote_members']
 
+# Memo 시리얼라이저
+class MemoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Memo
+        fields = '__all__' 
+
 # 약속 시리얼라이저
 class PromiseSerializer(serializers.ModelSerializer):
     user = ProfileSerializer(read_only=True)
@@ -24,10 +30,11 @@ class PromiseSerializer(serializers.ModelSerializer):
     accept_members = ProfileSerializer(many=True, read_only=True)
     reject_members = ProfileSerializer(many=True, read_only=True)
     promise_options = PromiseOptionSerializer(many=True, read_only=True)
+    memos = MemoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Promise
-        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'accept_members', 'reject_members', 'promise_options']
+        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'accept_members', 'reject_members', 'promise_options', 'memos']
 
 # 가능한 약속시간 탐색 필드 검증을 위한 시리얼라이저 
 class CreatePromiseOptionsSerializer(serializers.Serializer):
