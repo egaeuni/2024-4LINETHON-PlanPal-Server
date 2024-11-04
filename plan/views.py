@@ -1,16 +1,15 @@
 from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Plan, Category
 from .serializers import PlanSerializer, CategorySerializer
-from .permissions import CustomReadOnly
-from django.db.models import Q
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 from django.utils import timezone
 from calendar import monthrange
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
+
+from users.models import Profile
 
 User = get_user_model()
 
@@ -21,12 +20,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         username = self.kwargs.get('username')
         if username:
-            user = get_object_or_404(User, username=username)
             return Category.objects.filter(author__username=username)
         return Category.objects.all()
 
     def create(self, request, username=None):
-        user = get_object_or_404(User, username=username)
+        user = get_object_or_404(Profile, username=username)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=user)
@@ -60,25 +58,73 @@ class PlanViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
     def create(self, request, username=None):
-        user = get_object_or_404(User, username=username)
-        user = get_object_or_404(User, username=username)
-        if request.user.username == username:
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(author=user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        # username으로 사용자 객체 찾기
+        user = get_object_or_404(Profile, username=username)
+        
+        # category id로 카테고리 객체 찾기
+        category_id = request.data.get('category')
+        category = get_object_or_404(Category, id=category_id) 
+        
+        # participant id 리스트 가져오기
+        participant_usernames = request.data.get('participant', [])
+        
+        # 시리얼라이저에 유효성 검사 진행
+        serializer = PlanSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Plan 객체 생성
+            plan = Plan.objects.create(
+                author=user,
+                title=serializer.validated_data.get('title'),
+                category=category,
+                start=serializer.validated_data.get('start'),
+                end=serializer.validated_data.get('end'),
+                memo=serializer.validated_data.get('memo'),
+                is_completed=serializer.validated_data.get('is_completed'),
+            )
+            
+            # participant id 모두 객체로 변환
+            participants = Profile.objects.filter(username__in=participant_usernames)
+            plan.participant.set(participants)  # manyToMany 필드는 이렇게 set으로 처리 해줘야 합니다 !
+            
+            response_serializer = PlanSerializer(plan)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def update(self, request, username=None, pk=None):
-        user = get_object_or_404(User, username=username)
+        # username으로 사용자 객체 찾기
+        user = get_object_or_404(Profile, username=username)
+        
+        # 해당하는 Plan 객체 찾기
         plan = get_object_or_404(Plan, pk=pk, author=user)
-        serializer = self.get_serializer(plan, data=request.data)
+
+        # category id로 카테고리 객체 찾기 (선택적)
+        category_id = request.data.get('category')
+        category = get_object_or_404(Category, id=category_id)
+
+        # participant id 리스트 가져오기
+        participant_usernames = request.data.get('participant', [])
+        
+        # 시리얼라이저에 유효성 검사 진행
+        serializer = PlanSerializer(plan, data=request.data, partial=True)  # partial=True는 부분 업데이트 !
+
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            # Plan 객체 업데이트
+            updated_plan = serializer.save(
+                category=category,  # 카테고리 업데이트
+            )
+
+            # participant id 모두 객체로 변환
+            participants = Profile.objects.filter(username__in=participant_usernames)
+            updated_plan.participant.set(participants)  # manyToMany 필드는 이렇게 set으로 처리 해줘야 합니다 !
+
+            response_serializer = PlanSerializer(updated_plan)
+            return Response(response_serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def destroy(self, request, username=None, pk=None):
         user = get_object_or_404(User, username=username)
