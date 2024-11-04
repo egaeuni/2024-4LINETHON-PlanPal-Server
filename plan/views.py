@@ -139,8 +139,8 @@ class PlanViewSet(viewsets.ModelViewSet):
         month = int(request.query_params.get('month', timezone.now().month))
 
         _, last_day = monthrange(year, month)
-        start_date = datetime(year, month, 1)
-        end_date = datetime(year, month, last_day, 23,59,59)  # 년, 월, 일, 시, 분, 초
+        start_date = datetime(year, month, 1, tzinfo=timezone.get_current_timezone())  # KST로 변환
+        end_date = datetime(year, month, last_day, 23, 59, 59, tzinfo=timezone.get_current_timezone())  # KST로 변환
 
         plans = self.get_queryset().filter(
             author=user,
@@ -159,16 +159,14 @@ class PlanViewSet(viewsets.ModelViewSet):
 
         plan_counts = {}
         for plan in plans:
-            date_key = plan.start.date().isoformat()
-            start_hour = plan.start.hour
-            end_hour = plan.end.hour
+            date_key = plan.start.astimezone(timezone.get_current_timezone()).date().isoformat()  # KST로 변환
             plan_counts[date_key] = plan_counts.get(date_key, 0) + 1
 
             plan_data= {
                 'id' : plan.id,
                 'title': plan.title,
-                'start' : plan.start.isoformat(),
-                'end': plan.end.isoformat(),
+                'start': plan.start.astimezone(timezone.get_current_timezone()).isoformat(),  # KST로 변환
+                'end': plan.end.astimezone(timezone.get_current_timezone()).isoformat(),  # KST로 변환
             }
 
             if len(calendar_data[date_key]['displayed_plans']) < 2:
