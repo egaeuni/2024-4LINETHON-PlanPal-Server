@@ -37,7 +37,6 @@ class ConfirmImmediatelyView(APIView):
         promise.save()
 
         selected_option = promise.promise_options.first()
-        promise.accept_members.add(promise.user)  # 주최자는 바로 accept에 추가
 
         # Plan 생성
         plan = Plan.objects.create(
