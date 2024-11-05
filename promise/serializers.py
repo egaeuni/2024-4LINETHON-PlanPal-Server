@@ -15,7 +15,7 @@ class PromiseOptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PromiseOption
-        fields = ['id', 'title', 'start', 'end', 'length', 'members_can_attend', 'vote_members']
+        fields = ['id', 'start', 'end', 'length', 'members_can_attend', 'vote_members']
 
 # Memo 시리얼라이저
 class MemoSerializer(serializers.ModelSerializer):

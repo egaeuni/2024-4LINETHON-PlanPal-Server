@@ -53,7 +53,6 @@ class CreatePromiseOptionsView(APIView):
             # 나 혼자만 가능한 일정은 제외해야 함
             if len(option["members"]) != 1:
                 promise_option = PromiseOption.objects.create(
-                    title=title,
                     start=option["start"],
                     end=option["end"],
                     length=length
