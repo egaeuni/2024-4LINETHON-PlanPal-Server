@@ -64,8 +64,11 @@ class PromiseCRUDView(APIView):
             if new_memo_content:
                 memo.content = new_memo_content
                 memo.save()
-            elif new_memo_content:
-                memo.delete
+            elif new_memo_content == "":
+                memo.delete()
+            else:
+                memo.delete()
+                
         # 메모가 없는 경우 메모를 생성
         except Memo.DoesNotExist:
             Memo.objects.create(
