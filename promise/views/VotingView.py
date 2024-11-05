@@ -75,7 +75,7 @@ class VotingView(APIView):
         serializer = PromiseSerializer(promise)
 
         return Response({"message": "투표에 성공하였습니다.",  "result": serializer.data}, status=status.HTTP_200_OK)
-
+    
 
 # 모든 사용자가 투표를 완료했는지 확인하는 함수
 def isAllVote(promise):
@@ -128,5 +128,15 @@ def findBestOption(options):
     return options[0]  # 동률이 아니고 한번에 결정된 옵션 리턴
 
 # 24시간이 지났는지 확인하는 함수
-# def is24HoursAfter(createdAt):
-#     return timezone.now() >= createdAt + timezone.timedelta(hours=24)
+def is24HoursAfter():
+    promises = Promise.objects.filter(
+            status="voting",
+            created_at__lte=timezone.now() - timezone.timedelta(hours=24)
+        )
+    
+    for promise in promises:
+        promise.status = "confirming"
+        final_option = voteResult(promise)
+        promise.promise_options.set([final_option]) # 선정된 option으로 변경
+
+        promise.save()
