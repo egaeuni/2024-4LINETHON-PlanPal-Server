@@ -31,7 +31,8 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [ 
+    "channels",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,6 +78,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'PlanPal.wsgi.application'
+ASGI_APPLICATION = "PlanPal.asgi.application"
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+CELERY_BEAT_SCHEDULE = {
+    "update_promise_status_every_1_minute": {
+        "task": "promise.tasks.update_promise_status",
+        "schedule": 60.0,  # 1분마다 실행
+    },
+}
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database
