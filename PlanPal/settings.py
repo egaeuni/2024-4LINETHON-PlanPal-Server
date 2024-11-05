@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'plan',
-    'promise'
+    'promise',
+    'notifications',
 ]
 
 CORS_ALLOW_ALL_ORIGIN = True
@@ -113,13 +114,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'ko-kr'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
