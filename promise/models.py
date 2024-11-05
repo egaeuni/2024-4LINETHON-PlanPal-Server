@@ -27,8 +27,6 @@ class Promise(models.Model):
     accept_members = models.ManyToManyField(Profile, related_name="promises_accept")
     reject_members = models.ManyToManyField(Profile, related_name="promises_reject")
     
-    # favorites =  즐겨찾기
-
     title = models.CharField(max_length=30)
     start = models.DateTimeField()
     end = models.DateTimeField()
@@ -42,3 +40,7 @@ class Memo(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     content = models.TextField(max_length=30)
     promise = models.ForeignKey(Promise, on_delete=models.CASCADE, related_name='memos')
+
+class Mark(models.Model):
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    promise = models.ForeignKey(Promise, on_delete=models.CASCADE, related_name='mark')
