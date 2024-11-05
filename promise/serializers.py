@@ -15,7 +15,7 @@ class PromiseOptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PromiseOption
-        fields = ['id', 'title', 'start', 'end', 'length', 'members_can_attend', 'vote_members']
+        fields = ['id', 'start', 'end', 'length', 'members_can_attend', 'vote_members']
 
 # Memo 시리얼라이저
 class MemoSerializer(serializers.ModelSerializer):
@@ -43,16 +43,16 @@ class PromiseSerializer(serializers.ModelSerializer):
     memos = MemoSerializer(many=True, read_only=True)
 
     # 특정 username의 Mark만 반환하는 필드 추가
-    marks = serializers.SerializerMethodField()
+    is_marked = serializers.SerializerMethodField()
 
     class Meta:
         model = Promise
-        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'accept_members', 'reject_members', 'promise_options', 'memos', 'marks']
+        fields = ['id', 'title', 'start', 'end', 'length', 'created_at', 'status', 'user', 'members', 'accept_members', 'reject_members', 'promise_options', 'memos', 'is_marked']
 
-    def get_marks(self, obj):
+    def get_is_marked(self, obj):
         username = self.context.get('username')  # Serializer의 context에서 username 가져오기
-        marks = obj.mark.filter(user__username=username)  # 해당 username의 Mark 필터링
-        return MarkSerializer(marks, many=True).data
+        marks_exist = obj.mark.filter(user__username=username).exists()
+        return marks_exist
 
 # 가능한 약속시간 탐색 필드 검증을 위한 시리얼라이저 
 class CreatePromiseOptionsSerializer(serializers.Serializer):

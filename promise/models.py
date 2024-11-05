@@ -9,7 +9,6 @@ class PromiseOption(models.Model):
     # 투표한 사람들
     vote_members = models.ManyToManyField(Profile, related_name="voted_promise_options")
 
-    title = models.CharField(max_length=30)
     start = models.DateTimeField()
     end = models.DateTimeField()
     length = models.IntegerField()
