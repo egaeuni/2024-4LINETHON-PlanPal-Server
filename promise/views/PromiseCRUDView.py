@@ -71,11 +71,13 @@ class PromiseCRUDView(APIView):
                 
         # 메모가 없는 경우 메모를 생성
         except Memo.DoesNotExist:
-            Memo.objects.create(
-                user=me,
-                content=new_memo_content,
-                promise=promise
-            )
+            # "" 가 아닐 때만 생성하도록 수정
+            if not new_memo_content == "":
+                Memo.objects.create(
+                    user=me,
+                    content=new_memo_content,
+                    promise=promise
+                )
 
         # 참여자 변경
         if new_members_usernames:
