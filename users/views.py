@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
+from notifications.models import Notification
 
 from rest_framework.views import APIView
 
@@ -59,6 +60,12 @@ class FriendsView(APIView):
             return Response({'message': "이미 친구입니다."}, status=status.HTTP_200_OK)
 
         user.friends.add(target_user)
+
+        Notification.objects.create(
+            recipient=target_user,
+            message=f"{user.username}님이 {target_user.username}님을 친구 추가 하셨어요."
+        )
+
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
     def delete(self, request, my_username, target_username, format=None):
