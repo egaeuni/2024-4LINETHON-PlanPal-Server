@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [ 
+
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -94,21 +95,12 @@ ASGI_APPLICATION = "PlanPal.asgi.application"
 
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
-CELERY_TIMEZONE = 'Asia/Seoul'
 
 CELERY_BEAT_SCHEDULE = {
     "update_promise_status_every_1_minute": {
         "task": "promise.tasks.update_promise_status",
         "schedule": 60.0,  # 1분마다 실행
     },
-    "update_plan_status_every_1_minute": {
-        "task": "plan.tasks.plan_deadline",
-        "schedule": 60.0,  # 1분마다 실행
-    },
-}
-
-
-
 
 CHANNEL_LAYERS = {
     "default": {

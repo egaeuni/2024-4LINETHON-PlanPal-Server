@@ -64,15 +64,20 @@ class PromiseCRUDView(APIView):
             if new_memo_content:
                 memo.content = new_memo_content
                 memo.save()
+            elif new_memo_content == "":
+                memo.delete()
             else:
-                memo.delete
+                memo.delete()
+                
         # 메모가 없는 경우 메모를 생성
         except Memo.DoesNotExist:
-            Memo.objects.create(
-                user=me,
-                content=new_memo_content,
-                promise=promise
-            )
+            # "" 가 아닐 때만 생성하도록 수정
+            if not new_memo_content == "":
+                Memo.objects.create(
+                    user=me,
+                    content=new_memo_content,
+                    promise=promise
+                )
 
         # 참여자 변경
         if new_members_usernames:
@@ -93,15 +98,15 @@ class PromiseCRUDView(APIView):
 # 사용자 이름으로 약속 리스트 조회
 class GETPromiseByUsername(APIView):
     # username으로 약속 정보 조회
-    def get(self, request, username, format=None):
+    def get(self, request, my_username, target_username, format=None):
         try:
-            user = Profile.objects.get(username=username)
+            me = Profile.objects.get(username=my_username)
+            target = Profile.objects.get(username=target_username)
         except Profile.DoesNotExist:
             return Response({"message": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        promises = Promise.objects.filter(Q(user=user) | Q(accept_members=user)).distinct()
+        promises = Promise.objects.filter(Q(user=target) | Q(accept_members=target)).distinct()
         
-        serializer = PromiseSerializer(promises, many=True, context={'username': username})
-
+        serializer = PromiseSerializer(promises, many=True, context={'username': my_username})
 
         return Response({"message": "약속 정보 조회에 성공하였습니다.", "result": serializer.data}, status=status.HTTP_200_OK)

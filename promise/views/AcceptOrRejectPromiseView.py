@@ -48,7 +48,7 @@ class AcceptOrRejectPromiseView(APIView):
             # Plan 생성
             plan = Plan.objects.create(
                 author=user,
-                title=selected_option.title,
+                title=promise.title,
                 category=category,
                 start=selected_option.start,
                 end=selected_option.end,
