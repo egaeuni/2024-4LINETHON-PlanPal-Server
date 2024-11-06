@@ -12,4 +12,5 @@ urlpatterns = [
     path('plans/<str:username>/monthly/', PlanViewSet.as_view({'get': 'monthly'}), name='monthly_plans'),
     path('plans/<str:username>/weekly/', PlanViewSet.as_view({'get': 'weekly'}), name='weekly_plans'),
     path('plans/<str:username>/daily/', PlanViewSet.as_view({'get': 'daily'}), name='daily_plans'),
+    path('plans/<str:username>/daily_achievement/', PlanViewSet.as_view({'get': 'daily_achievement'}), name='daily_achievement'),
 ]

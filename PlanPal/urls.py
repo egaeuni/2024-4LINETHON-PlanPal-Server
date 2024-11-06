@@ -22,4 +22,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('plan/', include('plan.urls')),
     path('promises/', include('promise.urls')),
+    path('notifications/', include('notifications.urls')),
 ]

@@ -32,7 +32,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [ 
-    "channels",
+
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,8 +44,20 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'plan',
-    'promise'
+    'promise',
+    'notifications',
 ]
+
+ASGI_APPLICATION = 'PlanPal.asagiapplication'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 CORS_ALLOW_ALL_ORIGIN = True
 
@@ -88,9 +101,6 @@ CELERY_BEAT_SCHEDULE = {
         "task": "promise.tasks.update_promise_status",
         "schedule": 60.0,  # 1분마다 실행
     },
-}
-
-
 
 CHANNEL_LAYERS = {
     "default": {
@@ -138,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'Asia/Seoul'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
