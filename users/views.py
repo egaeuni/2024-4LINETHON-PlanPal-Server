@@ -76,6 +76,10 @@ class FriendsView(generics.CreateAPIView):
             target_user = Profile.objects.get(username=target_username)
         except ObjectDoesNotExist:
             return Response({'error': f"프로필 '{target_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        # 친구 목록에 target_user가 있는지 확인하고 없으면 400 처리
+        if target_user not in user.friends.all():
+            return Response({'error': f"{target_user.username}님은 친구 목록에 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    
         user.friends.remove(target_user)
         return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다."}, status=status.HTTP_204_NO_CONTENT)
