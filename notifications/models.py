@@ -5,9 +5,13 @@ from users.models import Profile
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
-        ('plan', 'Plan'),
-        ('promise', 'Promise'),
-        ('friend', 'Friend')
+        ('plan_deadline', 'Plan'),
+        ('daily_achievement', 'Daily_achievement'),
+        ('Brag_alarm', 'Barg_alarm'),
+        ('cheering', 'Cheering'),
+        ('friend', 'Friend'),
+        ('vote_alarm', 'Vote_alarm'),
+        ('accept_alarm', 'Accept_alarm')
     )
     recipient = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()

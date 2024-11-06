@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Plan, Category
-from .serializers import PlanSerializer, CategorySerializer
+from .serializers import *
 from datetime import datetime, timedelta
 from django.utils import timezone
 from calendar import monthrange
@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from users.models import Profile
 from notifications.models import Notification
-import logging
-logger = logging.getLogger(__name__)
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from rest_framework.decorators import api_view
 
 User = get_user_model()
 
@@ -302,12 +303,21 @@ class PlanViewSet(viewsets.ModelViewSet):
         now = timezone.now().astimezone(timezone.get_current_timezone())
         plan_end = plan.end.astimezone(timezone.get_current_timezone())
         deadline = plan_end - now
-        
+
         if deadline <= timezone.timedelta(hours=1) and not plan.is_completed:
             Notification.objects.create(
                 recipient=plan.author,
                 message=f"{plan.title} 마감시간까지 1시간 남았습니다! 잊지 말고 계획을 실행해주세요!",
                 notification_type='plan'
+            )
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"user_{plan.author.id}",
+                {
+                    'type': 'send_notification',
+                    'message': message,
+                }
             )
 
     @action(detail=False, methods=['get'])
@@ -322,6 +332,15 @@ class PlanViewSet(viewsets.ModelViewSet):
             message=f"어제는 {total_plans}개의 계획 중에서 {completed_plans}개의 계획을 달성하셨습니다! " + 
             f"24년 {yesterday.month}월 {yesterday.day}일의 {user.nickname}님은 성실하셨네요!",
             notification_type='plan'
+        )
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user.id}",
+            {
+                'type': 'send_notification',
+                'message': message,
+            }
         )
         
         return Response({"message": "일일 달성 알림을 생성했습니다."}, status=status.HTTP_200_OK)

@@ -31,7 +31,8 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [ 
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +46,17 @@ INSTALLED_APPS = [
     'promise',
     'notifications',
 ]
+
+ASGI_APPLICATION = 'PlanPal.asagiapplication'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 CORS_ALLOW_ALL_ORIGIN = True
 
@@ -78,6 +90,34 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'PlanPal.wsgi.application'
+ASGI_APPLICATION = "PlanPal.asgi.application"
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_TIMEZONE = 'Asia/Seoul'
+
+CELERY_BEAT_SCHEDULE = {
+    "update_promise_status_every_1_minute": {
+        "task": "promise.tasks.update_promise_status",
+        "schedule": 60.0,  # 1분마다 실행
+    },
+    "update_plan_status_every_1_minute": {
+        "task": "plan.tasks.plan_deadline",
+        "schedule": 60.0,  # 1분마다 실행
+    },
+}
+
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -114,13 +154,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'Asia/Seoul'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
