@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from users.models import Profile
+from plan.models import Plan
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
@@ -23,3 +24,10 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Brag(models.Model):
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='brags')
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='brags')
+    memo = models.TextField()
+    recipients = models.ManyToManyField(Profile, related_name='received_brags') 
+    created_at = models.DateTimeField(auto_now_add=True)
