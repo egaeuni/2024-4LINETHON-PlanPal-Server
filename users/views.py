@@ -65,9 +65,6 @@ class FriendsView(generics.CreateAPIView):
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
     def delete(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
         user_username = kwargs.get('username')
         try:
             user = Profile.objects.get(username=user_username)
