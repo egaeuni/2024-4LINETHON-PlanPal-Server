@@ -65,14 +65,3 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.intro = validated_data.get('intro', instance.intro)
         instance.save()
         return instance
-
-# 친구 추가 및 삭제
-class Friends(serializers.Serializer):
-    username = serializers.CharField()
-    
-    def create(self, validated_data):
-        request_user = self.context['request'].user
-        target_user = get_object_or_404(Profile, user__username=validated_data['username'])
-
-        request_user.friends.add(target_user)
-        return target_user
