@@ -2,16 +2,17 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from users.models import Profile
+from plan.models import Plan
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
-        ('plan_deadline', 'Plan'),
+        ('plan_deadline', 'Plan_deadline'),
         ('daily_achievement', 'Daily_achievement'),
-        ('Brag_alarm', 'Barg_alarm'),
+        ('brag', 'Barg'),
         ('cheering', 'Cheering'),
-        ('friend', 'Friend'),
-        ('vote_alarm', 'Vote_alarm'),
-        ('accept_alarm', 'Accept_alarm')
+        ('add_friend', 'Add_friend'),
+        ('vote', 'Vote'),
+        ('promise_accept', 'Promise_accept')
     )
     recipient = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
@@ -23,3 +24,25 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.message}"
+
+class Brag(models.Model):
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='brags')
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='brags')
+    memo = models.TextField()
+    recipients = models.ManyToManyField(Profile, related_name='received_brags') 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author.nickname}님의 '{self.plan.title}' 떠벌림"
+
+class Reply(models.Model):
+    brag = models.ForeignKey('Brag', related_name='replies', on_delete=models.CASCADE)  
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)  
+    memo = models.TextField() 
+    created_at = models.DateTimeField(auto_now_add=True)  
+
+    def __str__(self):
+        return f"{self.author}님의 답변: {self.memo}"

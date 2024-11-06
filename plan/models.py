@@ -8,7 +8,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
-from notifications.models import Notification
 
 User = get_user_model()
 
