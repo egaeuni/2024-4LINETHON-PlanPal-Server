@@ -65,13 +65,13 @@ class FriendsView(generics.CreateAPIView):
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
     def delete(self, request, *args, **kwargs):
-        user_username = kwargs.get('username')
+        user_username = kwargs.get('my_username')
         try:
             user = Profile.objects.get(username=user_username)
         except ObjectDoesNotExist:
             return Response({'error': f"프로필 '{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-        target_username = request.data.get('username')
+        target_username = kwargs.get('target_username')
         try:
             target_user = Profile.objects.get(username=target_username)
         except ObjectDoesNotExist:
