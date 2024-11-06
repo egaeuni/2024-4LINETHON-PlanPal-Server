@@ -78,4 +78,4 @@ class FriendsView(APIView):
     
         user.friends.remove(target_user)
         serializer = FriendsSerializer(user.friends, many=True)
-        return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다.", "result": serializer.data}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
