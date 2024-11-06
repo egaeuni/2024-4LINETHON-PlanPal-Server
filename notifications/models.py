@@ -25,9 +25,24 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    def __str__(self):
+        return f"{self.message}"
+
 class Brag(models.Model):
     author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='brags')
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='brags')
     memo = models.TextField()
     recipients = models.ManyToManyField(Profile, related_name='received_brags') 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author.nickname}님의 '{self.plan.title}' 떠벌림"
+
+class Reply(models.Model):
+    brag = models.ForeignKey('Brag', related_name='replies', on_delete=models.CASCADE)  
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)  
+    memo = models.TextField() 
+    created_at = models.DateTimeField(auto_now_add=True)  
+
+    def __str__(self):
+        return f"{self.author}님의 답변: {self.memo}"

@@ -1,8 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Notification, Brag
-from .serializers import NotificationSerializer
+from .models import Notification, Brag, Reply
+from .serializers import NotificationSerializer,ReplySerializer,BragSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from plan.models import Plan
@@ -65,7 +65,7 @@ class BragView(APIView):
             for recipient in recipients:
                 Notification.objects.create(
                     recipient=recipient,
-                    message=f"{request.user.nickname}님이 '{brag.memo}'라고 떠벌렸습니다!",
+                    message=f"{request.user.nickname}님이 자신의 계획을 떠벌리셨습니다. '{brag.memo}'",
                     notification_type='brag',
                     content_type=content_type,
                     object_id=plan.id
@@ -73,3 +73,28 @@ class BragView(APIView):
                 
             return Response({"message":"떠벌림이 성공적으로 전송되었습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
         return Response({"message":"떠벌림을 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class ReplyView(APIView):
+    def post(self, request, brag_id):
+        brag = get_object_or_404(Brag, id=brag_id)
+        serializer = ReplySerializer(data=request.data)
+        
+        if serializer.is_valid():
+            reply = Reply.objects.create(
+                brag=brag,
+                author=request.user,
+                memo=serializer.validated_data.get('memo')
+            )
+
+            content_type = ContentType.objects.get_for_model(reply)
+            Notification.objects.create(
+                recipient=brag.author,
+                message=f"{request.user.nickname}님께서 {brag.author.nickname}님을 응원하셨어요. '{reply.memo}'",
+                notification_type='cheering',
+                content_type=content_type,
+                object_id=reply.id
+            )
+            
+            return Response({"message": "답변이 성공적으로 등록되었습니다.", "result": serializer.data}, status=status.HTTP_201_CREATED)
+        
+        return Response({"message": "답변 등록에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
