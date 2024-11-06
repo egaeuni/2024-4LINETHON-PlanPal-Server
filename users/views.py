@@ -36,20 +36,16 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return get_object_or_404(Profile, username=username)
 
 class FriendsView(generics.CreateAPIView):
-    serializer_class = Friends
     queryset = Profile.objects.all()
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
         user_username = kwargs.get('username')
         try:
             user = Profile.objects.get(username=user_username)
         except ObjectDoesNotExist:
             return Response({'error': f"'{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        target_username = serializer.validated_data['username']
+        target_username = kwargs.get('target_username')
         try:
             target_user = Profile.objects.get(username=target_username)
         except ObjectDoesNotExist:
