@@ -65,3 +65,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.intro = validated_data.get('intro', instance.intro)
         instance.save()
         return instance
+    
+
+# 'id', 'username', 'nickname' 반환을 위한 시리얼라이저
+class FriendsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'nickname']

@@ -8,6 +8,8 @@ from rest_framework.authentication import SessionAuthentication
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 
+from .serializers import FriendsSerializer
+
 class RegisterView(generics.CreateAPIView):
     queryset = Profile.objects.all()
     serializer_class = Register
@@ -60,7 +62,7 @@ class FriendsView(generics.CreateAPIView):
         user.friends.add(target_user)
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
-    def delete(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         user_username = kwargs.get('username')
         try:
             user = Profile.objects.get(username=user_username)
@@ -78,4 +80,5 @@ class FriendsView(generics.CreateAPIView):
             return Response({'error': f"{target_user.username}님은 친구 목록에 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
     
         user.friends.remove(target_user)
-        return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다."}, status=status.HTTP_204_NO_CONTENT)
+        serializer = FriendsSerializer(user.friends, many=True)
+        return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다.", "result": serializer.data}, status=status.HTTP_204_NO_CONTENT)
