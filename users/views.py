@@ -8,6 +8,9 @@ from rest_framework.authentication import SessionAuthentication
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 
+from rest_framework.views import APIView
+
+
 from .serializers import FriendsSerializer
 
 class RegisterView(generics.CreateAPIView):
@@ -37,23 +40,19 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         username = self.kwargs.get('username')
         return get_object_or_404(Profile, username=username)
 
-class FriendsView(generics.CreateAPIView):
-    queryset = Profile.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        user_username = kwargs.get('username')
+class FriendsView(APIView):
+    def post(self, request, my_username, target_username, format=None):
         try:
-            user = Profile.objects.get(username=user_username)
+            user = Profile.objects.get(username=my_username)
         except ObjectDoesNotExist:
-            return Response({'error': f"'{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': f"'{my_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        target_username = kwargs.get('target_username')
         try:
             target_user = Profile.objects.get(username=target_username)
         except ObjectDoesNotExist:
             return Response({'error': "해당 유저는 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-        if user_username == target_username:
+        if my_username == target_username:
             return Response({'error': "자기 자신을 친구로 추가할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         if user.friends.filter(username=target_user.username).exists():
@@ -62,14 +61,12 @@ class FriendsView(generics.CreateAPIView):
         user.friends.add(target_user)
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)
     
-    def put(self, request, *args, **kwargs):
-        user_username = kwargs.get('username')
+    def delete(self, request, my_username, target_username, format=None):
         try:
-            user = Profile.objects.get(username=user_username)
+            user = Profile.objects.get(username=my_username)
         except ObjectDoesNotExist:
-            return Response({'error': f"프로필 '{user_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': f"프로필 '{my_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-        target_username = kwargs.get('target_username')
         try:
             target_user = Profile.objects.get(username=target_username)
         except ObjectDoesNotExist:
