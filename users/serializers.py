@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 
 from plan.models import Category
 
