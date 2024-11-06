@@ -101,6 +101,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "promise.tasks.update_promise_status",
         "schedule": 60.0,  # 1분마다 실행
     },
+}
 
 CHANNEL_LAYERS = {
     "default": {
