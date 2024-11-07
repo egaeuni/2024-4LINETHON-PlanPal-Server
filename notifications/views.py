@@ -86,6 +86,9 @@ class ReplyView(APIView):
                 memo=serializer.validated_data.get('memo')
             )
 
+            # Reply 객체 직렬화하여 반환
+            #reply_serializer = ReplySerializer(reply)
+
             content_type = ContentType.objects.get_for_model(reply)
             Notification.objects.create(
                 recipient=brag.author,
