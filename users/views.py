@@ -63,7 +63,9 @@ class FriendsView(APIView):
 
         Notification.objects.create(
             recipient=target_user,
-            message=f"{user.username}님이 {target_user.username}님을 친구 추가 하셨어요."
+            message=f"{user.username}님이 {target_user.username}님을 친구 추가 하셨어요. \n {target_user}님을 친구 추가 하고 싶으시다면 클릭해주세요." ,
+            notification_type="Add_friend",
+            action_type='follow'
         )
 
         return Response({'message': f"{target_user.username}님을 친구 추가했습니다."}, status=status.HTTP_201_CREATED)

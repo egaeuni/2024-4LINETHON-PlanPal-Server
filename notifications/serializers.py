@@ -6,7 +6,7 @@ from plan.serializers import PlanSerializer
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'recipient', 'message', 'content_type', 'object_id', 'notification_type']
+        fields = ['id', 'recipient', 'message', 'notification_type']
 
 
 class BragSerializer(serializers.ModelSerializer):
