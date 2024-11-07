@@ -304,11 +304,11 @@ class PlanViewSet(viewsets.ModelViewSet):
         plan_end = plan.end.astimezone(timezone.get_current_timezone())
         deadline = plan_end - now
 
-        if deadline <= timezone.timedelta(hours=1) and not plan.is_completed:
+        if deadline > timezone.timedelta(0) and deadline <= timezone.timedelta(hours=1) and not plan.is_completed:
             Notification.objects.create(
                 recipient=plan.author,
                 message=f"{plan.title} 마감시간까지 1시간 남았습니다! 잊지 말고 계획을 실행해주세요!",
-                notification_type='plan'
+                notification_type='plan_deadline'
             )
 
             channel_layer = get_channel_layer()
@@ -316,7 +316,7 @@ class PlanViewSet(viewsets.ModelViewSet):
                 f"user_{plan.author.id}",
                 {
                     'type': 'send_notification',
-                    'message': message,
+                    'message': f"{plan.title} 마감시간까지 1시간 남았습니다! 잊지 말고 계획을 실행해주세요!",
                 }
             )
 

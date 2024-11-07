@@ -103,12 +103,10 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
+CELERY_BEAT_SCHEDULE = {
+    'check-plan-deadlines': {
+        'task': 'plan.tasks.check_plan_deadlines',
+        'schedule': 60.0,
     },
 }
 

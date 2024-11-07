@@ -50,10 +50,12 @@ class FriendNotificationView(APIView):
 
         return Response({"message":"친구 알림을 불러왔습니다.", "result":serializer.data}, status=status.HTTP_200_OK)
 
-
+# 떠벌림
 class BragView(APIView):
-    def post(self, request,plan_id):
+    def post(self, request, username, plan_id):
+        user = get_object_or_404(User, username=username)
         plan = get_object_or_404(Plan, id=plan_id)
+
         serializer = BragSerializer(data=request.data)
         if serializer.is_valid():
             brag = Brag.objects.create(
@@ -83,9 +85,12 @@ class BragView(APIView):
             return Response({"message":"떠벌림이 성공적으로 전송되었습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
         return Response({"message":"떠벌림을 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+# 답장
 class ReplyView(APIView):
-    def post(self, request, brag_id):
+    def post(self, request, username, brag_id):
+        user = get_object_or_404(User, username=username)
         brag = get_object_or_404(Brag, id=brag_id)
+
         serializer = ReplySerializer(data=request.data)
         
         if serializer.is_valid():
@@ -111,6 +116,8 @@ class ReplyView(APIView):
         
         return Response({"message": "답변 등록에 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
+# 팔로우 백
 class NotificationActionView(APIView):
     def post(self, request, notification_id, format=None):
         try:
