@@ -100,13 +100,17 @@ class PlanViewSet(viewsets.ModelViewSet):
         serializer = PlanSerializer(data=request.data)
         
         if serializer.is_valid():
+            # start와 end 시간을 KST로 변환
+            start_time = serializer.validated_data.get('start').astimezone(timezone.get_current_timezone())
+            end_time = serializer.validated_data.get('end').astimezone(timezone.get_current_timezone())
+
             # Plan 객체 생성
             plan = Plan.objects.create(
                 author=user,
                 title=serializer.validated_data.get('title'),
                 category=category,
-                start=serializer.validated_data.get('start'),
-                end=serializer.validated_data.get('end'),
+                start=start_time,
+                end=end_time,
                 memo=serializer.validated_data.get('memo'),
                 is_completed=serializer.validated_data.get('is_completed'),
             )
@@ -140,6 +144,10 @@ class PlanViewSet(viewsets.ModelViewSet):
         serializer = PlanSerializer(plan, data=request.data, partial=True)  # partial=True는 부분 업데이트 !
 
         if serializer.is_valid():
+            # start와 end 시간을 KST로 변환 (필요 시)
+            start_time = serializer.validated_data.get('start').astimezone(timezone.get_current_timezone()) if 'start' in serializer.validated_data else plan.start.astimezone(timezone.get_current_timezone())
+            end_time = serializer.validated_data.get('end').astimezone(timezone.get_current_timezone()) if 'end' in serializer.validated_data else plan.end.astimezone(timezone.get_current_timezone())
+
             # Plan 객체 업데이트
             updated_plan = serializer.save(
                 category=category,  # 카테고리 업데이트
