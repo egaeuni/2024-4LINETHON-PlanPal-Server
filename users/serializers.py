@@ -15,20 +15,11 @@ class Register(serializers.ModelSerializer):
         validators = [validate_password]
     )
 
-    password2 = serializers.CharField(write_only=True, required=True,)
-
     nickname = serializers.CharField(required=True)
     
     class Meta:
         model = Profile
-        fields = ('username', 'password', 'password2','nickname')
-
-    def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError(
-                {"password":"비밀번호가 일치하지 않습니다."}
-            )
-        return data
+        fields = ('username', 'password','nickname')
 
     def create(self, validated_data):
         user = Profile.objects.create(
