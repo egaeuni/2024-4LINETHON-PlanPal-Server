@@ -60,6 +60,7 @@ CHANNEL_LAYERS = {
 }
 
 CORS_ALLOW_ALL_ORIGIN = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
