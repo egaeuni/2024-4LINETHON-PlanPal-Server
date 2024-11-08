@@ -95,6 +95,7 @@ ASGI_APPLICATION = "PlanPal.asgi.application"
 
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_TIMEZONE = "Asia/Seoul"
 
 CELERY_BEAT_SCHEDULE = {
     "update_promise_status_every_1_minute": {
@@ -147,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
