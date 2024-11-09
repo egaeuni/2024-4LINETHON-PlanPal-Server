@@ -82,7 +82,7 @@ class BragView(APIView):
                     object_id=plan.id
                 )
                 
-            return Response({"message":"떠벌림이 성공적으로 전송되었습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"message":"떠벌림이 성공적으로 전송되었습니다.", "result": {"brag_id": brag.id, "memo": serializer.validated_data.get('memo')}}, status=status.HTTP_200_OK)
         return Response({"message":"떠벌림을 실패했습니다.", "result": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 # 답장
