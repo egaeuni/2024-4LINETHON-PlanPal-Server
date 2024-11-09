@@ -51,9 +51,9 @@ INSTALLED_APPS = [
 ASGI_APPLICATION = 'PlanPal.asagiapplication'
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
             "hosts": [("127.0.0.1", 6379)],
         },
     },
@@ -108,8 +108,17 @@ CELERY_BEAT_SCHEDULE = {
 CELERY_BEAT_SCHEDULE = {
     'check-plan-deadlines': {
         'task': 'plan.tasks.check_plan_deadlines',
-        'schedule': 60.0,
+        'schedule': 3600.0, # 1시간마다 실행
     },
+}
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send-daily-achievement': {
+        'task': 'tasks.send_daily_achievement',
+        'schedule' : crontab(hour=8, minute=0)
+    }
 }
 
 
@@ -153,7 +162,7 @@ TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

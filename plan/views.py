@@ -114,7 +114,7 @@ class PlanViewSet(viewsets.ModelViewSet):
                 memo=serializer.validated_data.get('memo'),
                 is_completed=serializer.validated_data.get('is_completed'),
             )
-            self.plan_deadline(plan)
+            
 
             # participant id 모두 객체로 변환
             participants = Profile.objects.filter(username__in=participant_usernames)
@@ -152,7 +152,7 @@ class PlanViewSet(viewsets.ModelViewSet):
             updated_plan = serializer.save(
                 category=category,  # 카테고리 업데이트
             )
-            self.plan_deadline(updated_plan)
+            
 
             # participant id 모두 객체로 변환
             participants = Profile.objects.filter(username__in=participant_usernames)
@@ -328,18 +328,15 @@ class PlanViewSet(viewsets.ModelViewSet):
                 }
             )
 
-    @action(detail=False, methods=['get'])
-    def daily_achievement(self, request, username=None):
-        user = get_object_or_404(User, username=username)
+    def daily_achievement(self, request):
         yesterday = timezone.now().date() - timezone.timedelta(days=1)
         total_plans = Plan.objects.filter(author=user, start__date=yesterday).count()
         completed_plans = Plan.objects.filter(author=user, start__date=yesterday, is_completed=True).count()
         
         Notification.objects.create(
             recipient=user,
-            message=f"어제는 {total_plans}개의 계획 중에서 {completed_plans}개의 계획을 달성하셨습니다! " + 
-            f"24년 {yesterday.month}월 {yesterday.day}일의 {user.nickname}님은 성실하셨네요!",
-            notification_type='plan'
+            message=f"어제는 {total_plans}개의 계획 중에서 {completed_plans}개의 계획을 달성하셨습니다! \n {yesterday.year}년 {yesterday.month}월 {yesterday.day}일의 {user.nickname}님은 성실하셨네요!",
+            notification_type='daily_achievement'
         )
 
         channel_layer = get_channel_layer()
