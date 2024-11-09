@@ -8,15 +8,29 @@ from rest_framework.authentication import SessionAuthentication
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from notifications.models import Notification
-
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 
-
 from .serializers import FriendsSerializer
+
+User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     queryset = Profile.objects.all()
     serializer_class = Register
+
+class UsernameCheckView(APIView):
+    def get(self, request, *args, **kwargs):
+        username = request.query_params.get('username', None)
+        
+        if not username:
+            return Response({"message": "아이디(username)를 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 아이디 중복 여부 확인
+        if Profile.objects.filter(username=username).exists():
+            return Response({"message": "이미 존재하는 아이디입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "사용 가능한 아이디입니다."}, status=status.HTTP_200_OK)
 
 class LoginView(generics.GenericAPIView):
     serializer_class = Login
