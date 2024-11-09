@@ -21,6 +21,12 @@ class Register(serializers.ModelSerializer):
         model = Profile
         fields = ('username', 'password','nickname')
 
+    # 닉네임 중복 검사
+    def validate_nickname(self, value):
+        if Profile.objects.filter(nickname=value).exists():
+            raise serializers.ValidationError("이미 존재하는 닉네임입니다.")
+        return value
+
     def create(self, validated_data):
         user = Profile.objects.create(
             username=validated_data['username'],
@@ -49,6 +55,16 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('nickname', 'image', 'intro')
+
+    # 닉네임 중복 검사
+    def validate_nickname(self, value):
+        request_user = self.instance
+        
+        # 다른 사용자의 닉네임과 중복되는지 확인
+        if Profile.objects.filter(nickname=value).exclude(id=request_user.id).exists():
+            raise serializers.ValidationError("이미 존재하는 닉네임입니다.")
+        
+        return value
     
     def update(self, instance, validated_data):
         instance.nickname = validated_data.get('nickname', instance.nickname)
