@@ -102,3 +102,14 @@ class FriendsView(APIView):
         user.friends.remove(target_user)
         serializer = FriendsSerializer(user.friends, many=True)
         return Response({'message': f"{target_user.username}님을 친구 목록에서 삭제했습니다.", "result": serializer.data}, status=status.HTTP_200_OK)
+
+    def get(self, request, my_username, format=None):
+        # GET 메서드: 친구 목록 조회 로직
+        try:
+            user = Profile.objects.get(username=my_username)
+        except ObjectDoesNotExist:
+            return Response({'error': f"프로필 '{my_username}'을(를) 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 친구 목록 직렬화
+        serializer = FriendsSerializer(user.friends.all(), many=True)
+        return Response({'message': '친구 리스트를 불러왔습니다.', 'result':serializer.data}, status=status.HTTP_200_OK)
