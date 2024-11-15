@@ -60,7 +60,7 @@ class BragView(APIView):
         if serializer.is_valid():
             brag = Brag.objects.create(
                 plan = plan,
-                author=request.user,
+                author=user,
                 memo=serializer.validated_data.get('memo') 
             )
         
@@ -76,7 +76,7 @@ class BragView(APIView):
             for recipient in recipients:
                 Notification.objects.create(
                     recipient=recipient,
-                    message=f"{request.user.nickname}님이 자신의 계획을 떠벌리셨습니다. \n '{brag.memo}'",
+                    message=f"{user.nickname}님이 자신의 계획을 떠벌리셨습니다. \n '{brag.memo}'",
                     notification_type='brag',
                     content_type=content_type,
                     object_id=plan.id
@@ -96,7 +96,7 @@ class ReplyView(APIView):
         if serializer.is_valid():
             reply = Reply.objects.create(
                 brag=brag,
-                author=request.user,
+                author=user,
                 memo=serializer.validated_data.get('memo')
             )
 
@@ -106,7 +106,7 @@ class ReplyView(APIView):
             content_type = ContentType.objects.get_for_model(reply)
             Notification.objects.create(
                 recipient=brag.author,
-                message=f"{request.user.nickname}님께서 {brag.author.nickname}님을 응원하셨어요. \n '{reply.memo}'",
+                message=f"{user.nickname}님께서 {brag.author.nickname}님을 응원하셨어요. \n '{reply.memo}'",
                 notification_type='cheering',
                 content_type=content_type,
                 object_id=reply.id
